@@ -18,6 +18,12 @@ func main() {
 	flag.UintVar(&deviceNumber, "device", 0, "Specify the device number to get a particular HRM")
 	flag.Parse()
 
+	sensorID, err := ensureSensor()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("sensorID=%s\n", sensorID)
+
 	// So, we've opened the ANT USB stick, and grabbed in & out interfaces to it.
 	a, err := accessANT()
 	if err != nil {
@@ -71,6 +77,11 @@ func main() {
 		}
 
 		if pi.hr != 0 {
+			if pi.hr != fpi.hr {
+				if err := notifyHR(sensorID, pi.hr); err != nil {
+					log.Printf("failed to notify HR. %s", err)
+				}
+			}
 			fpi.hr = pi.hr
 		}
 		if pi.deviceNumber != 0 {
